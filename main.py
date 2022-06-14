@@ -7,8 +7,10 @@ Created on Tue Jun 14 09:07:45 2022
 """
 
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-                             QLineEdit, QComboBox, QListWidget, QMessageBox, QSpacerItem)
+                             QLineEdit, QComboBox, QListWidget, QMessageBox, QSpacerItem, QScrollBar)
 
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl
 import sys
 from PyQt5.QtGui import QIcon
 import spoti
@@ -17,7 +19,13 @@ import os
 
 
 class mainUi(QMainWindow):
+    """
+    Fenetre principale de spotifree
+    """
     def __init__(self):
+        """
+        Fonction d'initialisation du programme spotifree
+        """
         QMainWindow.__init__(self)
         # Créer les variables d'environement pour télécharger les musique
         client = "fe7f93a0d9664263add7dd0f822de8b1"
@@ -29,6 +37,9 @@ class mainUi(QMainWindow):
         self.show()
         
     def initUi(self):
+        """
+        Fonction créant les widgets de la fenetre
+        """
         self.resize(500, 500)
         self.setWindowTitle("Spotifree")
         # Création du widget central
@@ -54,14 +65,17 @@ class mainUi(QMainWindow):
         h_recherche.addWidget(self.combo_recherche)
         h_recherche.addWidget(button)
         
-        v_main = QVBoxLayout()
-        v_main.addLayout(h_recherche)
-        v_main.addStretch()
+        self.v_main = QVBoxLayout()
+        self.v_main.addLayout(h_recherche)
+        self.v_main.addStretch()
         
-        self.centralW.setLayout(v_main)
+        self.centralW.setLayout(self.v_main)
         
         
     def recherche(self):
+        """
+        Fonction permettant de rechercher une musique
+        """
         recherche = self.line_edit.text()
         tpe = self.combo_recherche.currentText()
         if tpe == "Musique":
@@ -74,6 +88,11 @@ class mainUi(QMainWindow):
                 
                 
     def musique_choisi(self, recherche):
+        """
+        Fonction récupérant la musique choisi et la télécharge
+        arugument:
+        recherche -> str contenant la musique choisi aison que son lien 
+        """
         item = self.poppup.list.currentItem()
         self.poppup.close()
         artiste = item.text().split(' : ')[0]
@@ -83,14 +102,110 @@ class mainUi(QMainWindow):
         commande = f"spotify_dl -l {lien} -o musique"
         os.system(commande)
         
-        chemin = nom + "/" + artiste + ' - ' + nom + ".mp3"
+        chemin = "musique/" + nom + "/" + artiste + ' - ' + nom + ".mp3"
+        os.system(f"chmod +x '{chemin}'")
+        
         self.lancer_musique(chemin)
         
         
-    def lancer_musique(self):
-        pass
+    def lancer_musique(self, chemin):
+        """
+        Fonction permettant le lancer une musique 
+        chemin -> str, chemin vers la musique
+        """
+        # Création des boutons
+        self.bt_play = QPushButton(QIcon("icones/play.jpg"), '')
+        self.bt_play.clicked.connect(self.play)
         
-                
+        
+        self.bt_pause = QPushButton(QIcon("icones/pause.jpg"), "")
+        self.bt_pause.clicked.connect(self.pause)
+        self.bt_pause.setEnabled(False)
+        
+        self.bt_stop = QPushButton(QIcon("icones/stop.png"), '')
+        self.bt_stop.clicked.connect(self.stop)
+        self.bt_stop.setEnabled(False)
+        
+        self.bt_plus = QPushButton('+')
+        self.bt_plus.clicked.connect(self.plus)
+        
+        self.bt_moins = QPushButton('-')
+        self.bt_moins.clicked.connect(self.moins)
+        
+        # Création du média player
+        self.player = QMediaPlayer()
+        path = os.path.join(os.getcwd(), chemin)
+        url = QUrl.fromLocalFile(path)
+        content = QMediaContent(url)
+        self.player.setVolume(50)
+        
+        self.player.setMedia(content)
+        
+        # Création de la scroll bar
+        # self.scrol = QScrollBar()
+        # self.scrol.setMaximum(100)
+        # self.scrol.resize(100, 5)
+        
+        # Création des layout
+        h_btp = QHBoxLayout()
+        h_btp.addWidget(self.bt_play)
+        h_btp.addWidget(self.bt_pause)
+        h_btp.addWidget(self.bt_stop)
+        
+        h_son = QHBoxLayout()
+        h_son.addWidget(self.bt_plus)
+        h_son.addWidget(self.bt_moins)
+        
+        self.v_musique = QVBoxLayout()
+        self.v_musique.addLayout(h_btp)
+        self.v_musique.addLayout(h_son)
+        
+        self.v_main.addLayout(self.v_musique)
+        
+        
+    def play(self):
+        """
+        Fonction permettant de jouer la musique en cours
+        """
+        self.bt_play.setEnabled(False)
+        self.bt_pause.setEnabled(True)
+        self.bt_stop.setEnabled(True)
+        self.player.play()
+        
+
+    def pause(self):
+        """
+        Fonction permettant de mettre en pause la musique en cours
+        """
+        self.bt_play.setEnabled(True)
+        self.bt_pause.setEnabled(False)
+        self.bt_stop.setEnabled(True)
+        self.player.pause()
+    
+    
+    def stop(self):
+        """
+        Fonction permettant d'arreter la musique en cours
+        """
+        self.bt_play.setEnabled(True)
+        self.bt_pause.setEnabled(False)
+        self.bt_stop.setEnabled(False)
+        self.player.stop()
+        
+        
+    def plus(self):
+        """
+        Fonction permettant de monter le son
+        """
+        self.player.setVolume(self.player.volume() + 5)
+        
+        
+    def moins(self):
+        """
+        Fonction permettant de baisser le son
+        """
+        self.player.setVolume(self.player.volume() - 5)
+ 
                 
     def clearAll(self, objet):
         """
@@ -133,18 +248,33 @@ class mainUi(QMainWindow):
                 else:
                     self.clearLayout(item.layout())
                     sip.delete(item)  
+                    
+            
             
         
 
 
 class poppupChoix(QMainWindow):
+    """
+    Classe de la poppup de choix des chansons
+    """
     def __init__(self, musiques):
+        """
+        Fonction d'initialisation de la poppup
+        argument :
+        musique -> dict, contient la liste eds musiques à choisir
+        """
         QMainWindow.__init__(self)
         self.initUi(musiques)
         self.show()
         
         
     def initUi(self, musiques):
+        """
+        Fonction permettant de génerer l'interface
+        argument :
+        musique -> dict, contient la liste eds musiques à choisir
+        """
         self.resize(500, 500)
         self.setWindowTitle("Choix musique")
         # Création du widget central

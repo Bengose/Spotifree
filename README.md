@@ -14,4 +14,5 @@ pip3 install -r requirements.txt
 
 Et installer le module ffmpeg avec la commande : 
 sudo apt install ffmpeg
-
+sudo apt install libqt5multimedia5-plugins
+sudo apt-get install qtgstreamer-plugins-qt5

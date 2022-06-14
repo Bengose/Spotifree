@@ -1366,6 +1366,6 @@
     "next" : "https://api.spotify.com/v1/search?query=Sainted&type=track&include_external=audio&offset=20&limit=20",
     "offset" : 0,
     "previous" : null,
-    "total" : 214
+    "total" : 238
   }
 }
