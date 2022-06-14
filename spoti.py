@@ -6,8 +6,6 @@ Created on Mon Jun 13 14:27:09 2022
 @author: couzinier
 """
 import os
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from get_token import get_access_token as tk
 import urllib
 import json
