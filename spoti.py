@@ -11,6 +11,7 @@ import urllib
 import json
 import subprocess
 
+
 def recherche_musique(nom, tipe='track'):
     """
     Fonction pemrettant de rechercher un nom de titre/d'artiste sur l'API spotify
@@ -55,7 +56,7 @@ def recherche_musique(nom, tipe='track'):
     if str(data.keys()) != "dict_keys(['error'])":
         #print(data["tracks"]["items"][0]["artists"][0]["name"])
         for e in  data["tracks"]["items"]:
-            dct = {"artiste":e["artists"][0]["name"], "lien":e["external_urls"]['spotify'], "musique":e["name"]}
+            dct = {"artiste":e["artists"][0]["name"], "lien":e["external_urls"]['spotify'], "musique":e["name"], "album":e["album"]["name"]}
             result.append(dct)
             #print(e["artists"][0]["name"], e["external_urls"], e["name"])
         return(result)

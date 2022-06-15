@@ -16,7 +16,7 @@ def ajout_musique(nom, artiste, album, lien):
     
     conn.commit()
     conn.close()
-    return('Tout va bien')
+    return('tout va bien')
 
 def connexion():
     conn= db.connect(
@@ -38,7 +38,7 @@ def ajout_user(nom, mdp):
     
     conn.commit()
     conn.close()
-    return('Tout va bien')
+    return('tout va bien')
 
 
 def recherche_user(nom):
@@ -109,7 +109,7 @@ def ajout_musique_play(user, nom_play, nom_musique):
     
     id_user = recherche_user(user)[0][0]
     print(id_user)
-    id_play = recherche_playlist(nom_play, id_user)[0][0]
+    id_play = recherche_playlist(nom_play, id_user, True)[0][0]
     id_musique = recherche_musique(nom_musique)[0][0]
                 
     
@@ -135,14 +135,19 @@ def supr_musique_play(user, nom_play, nom_musique):
     return("tout va bien")
 
 
-
-def recherche_playlist(nom_play, usr=False):
+def recherche_playlist(nom_play, usr=False, egal=False):
     conn, cur = connexion()
     
-    if usr == False:
-        cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" """)
+    if egal == False:
+        if usr == False:
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist LIke "%{nom_play}%" """)
+        else:
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist LIKE "%{nom_play}%" AND id_user = {usr}""")
     else:
-        cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" AND id_user = {usr}""")
+        if usr == False:
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" """)
+        else:
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" AND id_user = {usr}""")
         
     rows = cur.fetchall()
     
@@ -160,24 +165,83 @@ def recherche_musique(nom_musique):
     return(rows)
 
 
-
-def supr_musique():
-    pass
-
-
 def ajout_ami(user1, user2):
     # INSERT INTO friends VALUES (user1, user2)
-    pass
+    conn, cur = connexion()
+    
+    id_user1 = recherche_user(user1)[0][0]
+    id_user2 = recherche_user(user2)[0][0]
+    
+    cur.execute(f"""INSERT INTO friends VALUES({id_user1}, {id_user2})""")
+    
+    conn.commit()
+    conn.close()
+    return("tout va bien")
 
 
-def recherche_ami():
-    pass
+def supr_ami(user1, user2):
+    conn, cur = connexion()
+    
+    id_user1 = recherche_user(user1)[0][0]
+    id_user2 = recherche_user(user2)[0][0]
+    
+    cur.execute(f"""DELETE FROM friends WHERE id_user1 = {id_user1} AND id_user2 = {id_user2}""")
+    
+    conn.commit()
+    conn.close()
+    return("tout va bien")
 
 
-def supr_ami():
-    pass
+def friend_to_playlist(user, playlist, friend):
+    conn, cur = connexion()
+    
+    id_user = recherche_user(user)[0][0]
+    id_playlist = recherche_playlist(playlist, id_user, True)[0][0]
+    id_friend = recherche_user(friend)[0][0]
+    
+    cur.execute(f"""INSERT INTO user_playlist VALUES({id_playlist}, {id_friend})""")
+    
+    conn.commit()
+    conn.close()
+    return("tout va bien")
+
+
+def recherche_ami(user):
+    conn, cur = connexion()
+    
+    id_user = recherche_user(user)[0][0]
+    
+    cur.execute(f"""SELECT DISTINCT user.nom_user FROM friends
+                INNER JOIN user ON (friends.id_user1 = user.id_user OR friends.id_user2 = user.id_user)
+                WHERE friends.id_user1 = {id_user}
+                OR friends.id_user2 = {id_user}""")
+    
+    rows = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return(rows)
+
+
+def musique_in_play(user, playlist):
+    conn, cur = connexion()
+    
+    id_user = recherche_user(user)[0][0]
+    id_playlist = recherche_playlist(playlist, id_user, True)[0][0]
+    
+    cur.execute(f"""SELECT DISTINCT musique.nom, musique.artiste, musique.album, musique.lien FROM musique_playlist
+                INNER JOIN musique ON musique.id_musique = musique_playlist.id_musique
+                WHERE musique_playlist.id_playlist = {id_playlist}""")
+    
+    rows = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return(rows)
+
 
 def supr_user():
+    pass
+
+def supr_musique():
     pass
 
 
