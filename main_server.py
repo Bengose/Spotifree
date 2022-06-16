@@ -9,7 +9,13 @@ Created on Tue Jun 14 16:37:03 2022
 import sys
 import recherche_bdd as bdd
 import subprocess
+import os
+import glob
 
+
+dossier_serv = '/home/couzinier/clone/Spotifree/serveur'
+os.environ["SPOTIPY_CLIENT_ID"] = "fe7f93a0d9664263add7dd0f822de8b1"
+os.environ["SPOTIPY_CLIENT_SECRET"] = "9575b5da25aa4fdeace64e651f975265"
 
 if len(sys.argv) == 1:
     raise TypeError("Il manque des arguments")
@@ -104,14 +110,6 @@ elif sys.argv[1] == 'playlist':
     else:
         raise TypeError("Les arguments ne sont pas valide")
 
-elif sys.argv[1] == 'musique_playlist':
-    #print("On doit demander playlist")
-    if len(sys.argv) == 4:
-        id_user = bdd.recherche_user(sys.argv[3])[0][0]
-        result = bdd.recherche_playlist(sys.argv[2], id_user)
-        print(result)
-    else:
-        raise TypeError("Les arguments ne sont pas valide")
 
 elif sys.argv[1] == 'friend_to_playlist':
     #print("On doit demander playlist")
@@ -123,8 +121,8 @@ elif sys.argv[1] == 'friend_to_playlist':
 
 elif sys.argv[1] == 'search_friends':
     #print("On doit demander playlist")
-    if len(sys.argv) == 3:
-        result = bdd.recherche_ami(sys.argv[2])
+    if len(sys.argv) == 4:
+        result = bdd.recherche_ami(sys.argv[2], sys.argv[3])
         print(result)
     else:
         raise TypeError("Les arguments ne sont pas valide")
@@ -142,7 +140,7 @@ elif sys.argv[1] == 'search_musique':
     #print("On doit demander playlist")
     if len(sys.argv) == 3:
         
-        result = bdd.recherche_musique(sys.argv[2])
+        result = bdd.recherche_musique(sys.argv[2], True)
         print(result)
     else:
         raise TypeError("Les arguments ne sont pas valide")
@@ -150,15 +148,48 @@ elif sys.argv[1] == 'search_musique':
 elif sys.argv[1] == 'musique_dispo':
     
     if len(sys.argv) == 3:
-        commande = f"ls -d clone/Spotifree/serveur/*{sys.argv[2]}*"
-        print(subprocess.check_output(commande, shell=True).decode())
+        commande = f"shopt -s nocaseglob && ls -d {dossier_serv}/*{sys.argv[2]}*"
+        print(subprocess.check_output(['ssh', '127.0.0.1', commande]).decode())
     else:
         raise TypeError("Les arguments ne sont pas valide")
     
     
+elif sys.argv[1] == 'download':
+    
+    if len(sys.argv) == 3:
+        print(glob.glob(f"{dossier_serv}/{sys.argv[2]}/*.mp3")[0])
+    else:
+        raise TypeError("Les arguments ne sont pas valide")    
+    
+
+elif sys.argv[1] == 'serv_dwld':
+    
+    if len(sys.argv) == 6:
+        mus = bdd.recherche_musique(sys.argv[2])
+        if len(mus) == 0:
+            commande = f"spotify_dl -l {sys.argv[5]} -o {dossier_serv}"
+            temp = subprocess.check_output(commande, shell=True).decode()
+            lien = subprocess.check_output(f'ls -t {dossier_serv}/ | head -n1', shell=True).decode().replace('\n', "")
+            
+            bdd.ajout_musique(sys.argv[2], sys.argv[3], sys.argv[4], lien)
+            print(lien)
+            
+        else:
+            dossier = mus[0][4]
+            if not os.path.exists(f"{dossier_serv}/{dossier}"):
+                commande = f"spotify_dl -l {sys.argv[5]} -o serveur"
+                t = subprocess.check_output(commande, shell=True).decode()
+                
+            print(dossier)
+    else:
+        raise TypeError("Les arguments ne sont pas valide")   
     
     
-    
-    
-    
+elif sys.argv[1] == 'search_user':
+    #print("On doit demander playlist")
+    if len(sys.argv) == 3:
+        result = bdd.recherche_user(sys.argv[2])
+        print(result)
+    else:
+        raise TypeError("Les arguments ne sont pas valide")    
     

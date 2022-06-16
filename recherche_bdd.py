@@ -49,8 +49,10 @@ def recherche_user(nom):
     retourne l'utilisateur trouvé
     """
     conn, cur = connexion()
-    
-    cur.execute(f"""SELECT * FROM user WHERE nom_user = "{nom}" """)
+    if nom == "":
+        cur.execute(f"""SELECT * FROM user WHERE nom_user LIKE "%{nom}%" """)
+    else:
+        cur.execute(f"""SELECT * FROM user WHERE nom_user = "{nom}" """)
     rows = cur.fetchall()
     
     conn.commit()
@@ -142,12 +144,12 @@ def recherche_playlist(nom_play, usr=False, egal=False):
         if usr == False:
             cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist LIke "%{nom_play}%" """)
         else:
-            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist LIKE "%{nom_play}%" AND id_user = {usr}""")
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist LIKE "%{nom_play}%" AND (id_user = {usr} OR prive = 0)""")
     else:
         if usr == False:
             cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" """)
         else:
-            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" AND id_user = {usr}""")
+            cur.execute(f"""SELECT * FROM playlist WHERE nom_playlist = "{nom_play}" AND (id_user = {usr} OR prive = 0)""")
         
     rows = cur.fetchall()
     
@@ -156,9 +158,12 @@ def recherche_playlist(nom_play, usr=False, egal=False):
     return(rows)
 
 
-def recherche_musique(nom_musique):
+def recherche_musique(nom_musique, like = False):
     conn, cur = connexion()
-    cur.execute(f"""SELECT * FROM musique WHERE nom = "{nom_musique}" """)
+    if like == False:
+        cur.execute(f"""SELECT * FROM musique WHERE nom = "{nom_musique}" """)
+    else:
+        cur.execute(f"""SELECT * FROM musique WHERE nom LIKE "%{nom_musique}%" """)
     rows = cur.fetchall()
     conn.commit()
     conn.close()
@@ -185,7 +190,7 @@ def supr_ami(user1, user2):
     id_user1 = recherche_user(user1)[0][0]
     id_user2 = recherche_user(user2)[0][0]
     
-    cur.execute(f"""DELETE FROM friends WHERE id_user1 = {id_user1} AND id_user2 = {id_user2}""")
+    cur.execute(f"""DELETE FROM friends WHERE (id_user1 = {id_user1} AND id_user2 = {id_user2}) OR (id_user1 = {id_user2} AND id_user2 = {id_user1})""")
     
     conn.commit()
     conn.close()
@@ -206,15 +211,15 @@ def friend_to_playlist(user, playlist, friend):
     return("tout va bien")
 
 
-def recherche_ami(user):
+def recherche_ami(user, recherche):
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
     
     cur.execute(f"""SELECT DISTINCT user.nom_user FROM friends
                 INNER JOIN user ON (friends.id_user1 = user.id_user OR friends.id_user2 = user.id_user)
-                WHERE friends.id_user1 = {id_user}
-                OR friends.id_user2 = {id_user}""")
+                WHERE (friends.id_user1 = {id_user} OR friends.id_user2 = {id_user})
+                AND user.nom_user LIKE '%{recherche}%'""")
     
     rows = cur.fetchall()
     conn.commit()
