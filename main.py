@@ -31,6 +31,9 @@ class mainUi(QMainWindow):
         Fonction d'initialisation du programme spotifree
         """
         QMainWindow.__init__(self)
+        self.HOSTNAME = "127.0.0.1"
+        self.USERNAME = "couzinier"
+        self.PASSWORD = "motdepasse"
         # Créer les variables d'environement pour télécharger les musique
         client = "fe7f93a0d9664263add7dd0f822de8b1"
         cl_secret = "9575b5da25aa4fdeace64e651f975265"
@@ -575,10 +578,8 @@ class mainUi(QMainWindow):
         """
         
         if not os.path.exists(f"/home/couzinier/clone/Spotifree/musique/{nom}"):
-            HOSTNAME = "127.0.0.1"
-            USERNAME = "couzinier"
-            PASSWORD = "motdepasse"
-            ftp_server = ftplib.FTP(HOSTNAME, USERNAME, PASSWORD)
+            
+            ftp_server = ftplib.FTP(self.HOSTNAME, self.USERNAME, self.PASSWORD)
             os.system(f"mkdir /home/couzinier/clone/Spotifree/musique/'{nom}'")
             QApplication.setOverrideCursor(Qt.WaitCursor)
             ssh_stdout = subprocess.check_output(['ssh', '127.0.0.1', f"python3 /home/couzinier/clone/Spotifree/main_server.py download '{nom}'"]).decode().replace('\n', '')

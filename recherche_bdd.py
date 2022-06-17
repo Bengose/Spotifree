@@ -9,16 +9,10 @@ Created on Tue Jun 14 09:40:01 2022
 import mysql.connector as db
 
 
-def ajout_musique(nom, artiste, album, lien):
-    conn, cur = connexion()
-    
-    cur.execute(f"""INSERT INTO musique (nom, artiste, album, lien) VALUES ('{nom}', '{artiste}', '{album}', '{lien}') """)
-    
-    conn.commit()
-    conn.close()
-    return('tout va bien')
-
 def connexion():
+    """
+    Fonction se connectant à la base de données
+    """
     conn= db.connect(
         user="cyril",
         password="cyril",
@@ -28,6 +22,24 @@ def connexion():
     cur = conn.cursor()
     return(conn, cur)
 
+
+def ajout_musique(nom, artiste, album, lien):
+    """
+    Fonction ajoutant une musique à la base de donnée
+    arguments :
+    nom -> str, nom de la musique
+    artiste -> str, nom de l'artiste
+    album -> str, nom de l'album
+    lien -> str, chemin d'acces de la musique sur le serveur
+    retourne 'tout va bien' si l'ajout a été fait sans erreur
+    """
+    conn, cur = connexion()
+    
+    cur.execute(f"""INSERT INTO musique (nom, artiste, album, lien) VALUES ('{nom}', '{artiste}', '{album}', '{lien}') """)
+    
+    conn.commit()
+    conn.close()
+    return('tout va bien')
 
 
 def ajout_user(nom, mdp):
@@ -81,6 +93,14 @@ def verif_user(nom, mdp):
 
 
 def creer_playlist(user, nom_play, prive):
+    """
+    Fonction créant une playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    nom_play -> str, nom de la playlist
+    prive -> int, 1 pour privé et 0 pour publique
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -94,6 +114,13 @@ def creer_playlist(user, nom_play, prive):
 
 
 def supr_playlist(user, playlist):
+    """
+    Fonction supprimant une playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    playlist -> str, nom de la playlist
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -107,6 +134,14 @@ def supr_playlist(user, playlist):
 
 
 def ajout_musique_play(user, nom_play, nom_musique):
+    """
+    Fonction ajoutant une musique à la playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    nom_play -> str, nom de la playlist
+    nom_musique -> str, nom de la musique a ajouter
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -123,6 +158,14 @@ def ajout_musique_play(user, nom_play, nom_musique):
 
 
 def supr_musique_play(user, nom_play, nom_musique):
+    """
+    Fonction supprimant une musique à la playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    nom_play -> str, nom de la playlist
+    nom_musique -> str, nom de la musique a ajouter
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -138,6 +181,14 @@ def supr_musique_play(user, nom_play, nom_musique):
 
 
 def recherche_playlist(nom_play, usr=False, egal=False):
+    """
+    Fonction recherchant une playlist
+    arguments :
+    nom_play -> str, nom de la playlist
+    usr -> bool, True pour chercher les playlist liées à l'utilisateur
+    egal -> bool, True pour chercher le nom exact de la playlist
+    retourne le résultat de la recherche en list
+    """
     conn, cur = connexion()
     
     if egal == False:
@@ -159,6 +210,13 @@ def recherche_playlist(nom_play, usr=False, egal=False):
 
 
 def recherche_musique(nom_musique, like = False):
+    """
+    Fonction recherchant une musique
+    arguments :
+    nom_musique -> str, nom de la musique
+    like -> bool, True pour chercher le nom exact de la musique
+    retourne le résultat de la recherche en list
+    """
     conn, cur = connexion()
     if like == False:
         cur.execute(f"""SELECT * FROM musique WHERE nom = "{nom_musique}" """)
@@ -171,6 +229,13 @@ def recherche_musique(nom_musique, like = False):
 
 
 def ajout_ami(user1, user2):
+    """
+    Fonction ajoutant un amis
+    arguments :
+    user1 -> str, nom de l'utilisateur 1
+    user2 -> str, nom de l'utilisateur 2
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     # INSERT INTO friends VALUES (user1, user2)
     conn, cur = connexion()
     
@@ -185,6 +250,13 @@ def ajout_ami(user1, user2):
 
 
 def supr_ami(user1, user2):
+    """
+    Fonction supprimant un amis
+    arguments :
+    user1 -> str, nom de l'utilisateur 1
+    user2 -> str, nom de l'utilisateur 2
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user1 = recherche_user(user1)[0][0]
@@ -198,6 +270,14 @@ def supr_ami(user1, user2):
 
 
 def friend_to_playlist(user, playlist, friend):
+    """
+    Fonction ajoutant un amis à la playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    playlist -> str, nom de la playlist
+    friend -> str, nom de l'amis
+    retourne 'tout va bien' l'action a été faite sans erreur
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -212,6 +292,13 @@ def friend_to_playlist(user, playlist, friend):
 
 
 def recherche_ami(user, recherche):
+    """
+    Fonction recherchant un amis de l'user
+    arguments :
+    user -> str, nom de l'utilisateur
+    recherche -> str, nom de l'ami a rechercher
+    retourne le résultat de la recherche en list
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -228,6 +315,13 @@ def recherche_ami(user, recherche):
 
 
 def musique_in_play(user, playlist):
+    """
+    Fonction recherchant les musiques dans une playlist
+    arguments :
+    user -> str, nom de l'utilisateur
+    playlist -> str, nom de la playlist
+    retourne le résultat de la recherche en list
+    """
     conn, cur = connexion()
     
     id_user = recherche_user(user)[0][0]
@@ -242,12 +336,6 @@ def musique_in_play(user, playlist):
     conn.close()
     return(rows)
 
-
-def supr_user():
-    pass
-
-def supr_musique():
-    pass
 
 
 if __name__ == "__main__":

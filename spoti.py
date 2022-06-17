@@ -76,9 +76,6 @@ def recherche_nom(nom):
     
     for dct in recherche:
         print(dct["artiste"], dct["musique"], dct["lien"])
-        
-    
-
 
 
 if __name__ == "__main__":
